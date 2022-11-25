@@ -1,0 +1,44 @@
+#pac codepipeline src build yaml
+version: 0.2
+env:
+  shell: bash
+phases:
+  pre_build:
+    commands:
+      - docker version
+      - ls -lrt
+      - chmod 777 -R *
+  build:
+    commands:
+      - docker version
+      - docker ps
+      #test
+      - cd pac-app-mvn/
+      - ls
+      - docker login -u codevm2022 -p graalvm-virtualmachine233      
+      - ./mvnw package -Dpackaging=docker-native -Dmicronaut.runtime=lambda -Pgraalvm
+      - docker logout
+      - cd target
+      - unzip function.zip
+      - cd ..
+      - mkdir -p /home/test/pac-app-mvn/
+      - cp target/bootstrap target/func cfn/dev-template-feature07.yaml /home/test/pac-app-mvn/
+      - cd ..
+      - rm -rf *
+      - cp /home/test/pac-app-mvn/* ./
+      - chmod 777 *
+      - more dev-template-feature07.yaml
+      - ls -lrt
+      - aws cloudformation package --template-file dev-template-feature07.yaml --output-template-file packaged-template.yaml --s3-bucket cz-psc-s3-pac-dev
+      - more packaged-template.yaml
+      - aws cloudformation create-change-set --stack-name dev-pac-feature07 --change-set-name ChangeSetPAC --template-body file://packaged-template.yaml --capabilities CAPABILITY_IAM
+      - pwd
+  post_build:
+    commands:
+      - aws cloudformation wait change-set-create-complete --stack-name dev-pac-feature07 --change-set-name ChangeSetPAC
+      - aws cloudformation execute-change-set --change-set-name ChangeSetPAC --stack-name dev-pac-feature07
+artifacts:
+  files:
+    - dev-template-feature07.yaml
+    - packaged-template.yaml
+  discard-paths: yes

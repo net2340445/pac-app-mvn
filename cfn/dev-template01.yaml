@@ -1,0 +1,56 @@
+AWSTemplateFormatVersion : '2010-09-09'
+Resources:
+  LambdaResource:
+    Type: AWS::Lambda::Function
+    DeletionPolicy: Retain
+    Properties:
+      FunctionName: dev-pac01
+      Role: arn:aws:iam::006404635408:role/cz-psc-dev-pac-lambda01
+      Runtime: provided.al2
+      Handler: io.micronaut.function.aws.proxy.MicronautLambdaHandler
+      Code: ./
+      ReservedConcurrentExecutions: 80
+      MemorySize: 256
+      Timeout: 300
+  Version6:
+    Type: AWS::Lambda::Version
+    Properties:
+      FunctionName: !Ref LambdaResource
+      Description: CI/CD6
+  Version7:
+    Type: AWS::Lambda::Version
+    Properties:
+      FunctionName: !Ref LambdaResource
+      Description: CI/CD7
+  Version8:
+    Type: AWS::Lambda::Version
+    Properties:
+      FunctionName: !Ref LambdaResource
+      Description: CI/CD8
+  Alias:
+    Type: AWS::Lambda::Alias
+    Properties:
+      FunctionName: !Ref LambdaResource
+      FunctionVersion: !GetAtt Version8.Version
+      Name: dev
+      ProvisionedConcurrencyConfig:
+        ProvisionedConcurrentExecutions: 10
+  ScalableTarget:
+    Type: AWS::ApplicationAutoScaling::ScalableTarget
+    Properties:
+      MaxCapacity: 40
+      MinCapacity: 1
+      RoleARN: arn:aws:iam::006404635408:role/aws-service-role/lambda.application-autoscaling.amazonaws.com/AWSServiceRoleForApplicationAutoScaling_LambdaConcurrency
+      ServiceNamespace: lambda
+      ScalableDimension: lambda:function:ProvisionedConcurrency
+      ResourceId: !Sub function:dev-pac01:dev
+  TargetTrackingScalingPolicy:
+    Type: AWS::ApplicationAutoScaling::ScalingPolicy
+    Properties:
+      PolicyName: util60-target-tracking-scaling-policy
+      PolicyType: TargetTrackingScaling
+      ScalingTargetId: !Ref ScalableTarget
+      TargetTrackingScalingPolicyConfiguration:
+        TargetValue: 0.6
+        PredefinedMetricSpecification:
+          PredefinedMetricType: LambdaProvisionedConcurrencyUtilization

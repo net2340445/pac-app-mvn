@@ -1,0 +1,17 @@
+micronaut:
+  application:
+    name: pacAppMvn
+#with index
+#dynamodb:
+#  table-name: 'pac_all'
+
+#without index
+#dynamodb:
+#  table-name: 'pac_test'
+#dynamodb-local:
+#  host: localhost
+#  port: 8000
+
+#with index in cainz
+dynamodb:
+  table-name: 'pac_val'

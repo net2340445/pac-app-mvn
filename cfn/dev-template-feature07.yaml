@@ -1,0 +1,27 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Resources:
+  LambdaResource:
+    Type: AWS::Lambda::Function
+    DeletionPolicy: Retain
+    Properties:
+      FunctionName: dev-pac-feature07
+      Role: arn:aws:iam::006404635408:role/cz-psc-dev-pac-lambda01
+      Runtime: provided.al2
+      Handler: io.micronaut.function.aws.proxy.MicronautLambdaHandler
+      Code: ./
+      ReservedConcurrentExecutions: 80
+      MemorySize: 256
+      Timeout: 300
+  Version1:
+    Type: AWS::Lambda::Version
+    Properties:
+      FunctionName: !Ref LambdaResource
+      Description: CI/CD1
+  Alias:
+    Type: AWS::Lambda::Alias
+    Properties:
+      FunctionName: !Ref LambdaResource
+      FunctionVersion: !GetAtt Version1.Version
+      Name: dev
+      ProvisionedConcurrencyConfig:
+        ProvisionedConcurrentExecutions: 1

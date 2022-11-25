@@ -1,0 +1,58 @@
+AWSTemplateFormatVersion : '2010-09-09'
+Resources:
+  LambdaResource:
+    Type: AWS::Lambda::Function
+    DeletionPolicy: Retain
+    Properties:
+      FunctionName: prd-pac01
+      Role: arn:aws:iam::740424753867:role/cz-psc-prd-pac-lambda01
+      Runtime: provided.al2
+      Handler: function.handler
+      Code: ./
+      ReservedConcurrentExecutions: 80
+      MemorySize: 256
+      Timeout: 300
+  Version1:
+    Type: AWS::Lambda::Version
+    Properties:
+      FunctionName: !Ref LambdaResource
+      Description: CI/CD1
+  Version2:
+    Type: AWS::Lambda::Version
+    Properties:
+      FunctionName: !Ref LambdaResource
+      Description: CI/CD2
+  Version3:
+    Type: AWS::Lambda::Version
+    Properties:
+      FunctionName: !Ref LambdaResource
+      Description: CI/CD3
+  Version4:
+    Type: AWS::Lambda::Version
+    Properties:
+      FunctionName: !Ref LambdaResource
+      Description: CI/CD4
+  Alias:
+    Type: AWS::Lambda::Alias
+    Properties:
+      FunctionName: !Ref LambdaResource
+      FunctionVersion: !GetAtt Version4.Version
+      Name: prd
+      ProvisionedConcurrencyConfig:
+        ProvisionedConcurrentExecutions: 3
+  Alias1:
+    Type: AWS::Lambda::Alias
+    Properties:
+      FunctionName: !Ref LambdaResource
+      FunctionVersion: !GetAtt Version1.Version
+      Name: prd1
+      ProvisionedConcurrencyConfig:
+        ProvisionedConcurrentExecutions: 1
+  Alias2:
+    Type: AWS::Lambda::Alias
+    Properties:
+      FunctionName: !Ref LambdaResource
+      FunctionVersion: !GetAtt Version2.Version
+      Name: prd2
+      ProvisionedConcurrencyConfig:
+        ProvisionedConcurrentExecutions: 1

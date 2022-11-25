@@ -1,0 +1,14 @@
+AWSTemplateFormatVersion : '2010-09-09'
+Resources:
+  LambdaResource:
+    Type: AWS::Lambda::Function
+    DeletionPolicy: Retain
+    Properties:
+      FunctionName: dev-pac04
+      Role: arn:aws:iam::006404635408:role/cz-psc-dev-pac-lambda02
+      Runtime: provided.al2
+      Handler: io.micronaut.function.aws.proxy.MicronautLambdaHandler
+      Code: ./
+      ReservedConcurrentExecutions: 80
+      MemorySize: 256
+      Timeout: 300

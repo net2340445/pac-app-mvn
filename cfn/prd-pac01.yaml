@@ -1,0 +1,13 @@
+AWSTemplateFormatVersion : '2010-09-09'
+Description: Import Lambda
+Resources:
+  LambdaResource:
+    Type: AWS::Lambda::Function
+    DeletionPolicy: Retain
+    Properties:
+      FunctionName: prd-pac01
+      Role: arn:aws:iam::740424753867:role/cz-psc-prd-pac-lambda01
+      Runtime: provided.al2
+      Code: 
+        S3Bucket: cz-psc-s3-pac-prd
+        S3Key: pac-prd
